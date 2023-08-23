@@ -5,7 +5,7 @@ from selenium.webdriver.common.by import By
 import readchar
 
 ''' 程式說明
-功能 : 自動填表格
+功能 : 網頁自動填表格
 安裝套件 : pip install -r requirements.txt 
 參考文件 : https://steam.oxxostudio.tw/category/python/spider/selenium.html
 '''
