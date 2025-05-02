@@ -1,2 +1,0 @@
-readchar==4.0.5
-selenium==4.11.2
