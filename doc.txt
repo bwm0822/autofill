@@ -18,6 +18,7 @@ forms.py 的格式如下，可以有多form:
         "重試次數"  : 3,                #
         "日期"      : "2025/05/31",     # YYYY/MM/DD
         "搶票時間"  : "00:10:01",       # 00:00:00 - 23:59:59
+        "通知"      : "是",             # 是 / 否
     },
     {  
         "院區"      : "淡水",           # 台北 / 淡水
@@ -40,3 +41,13 @@ forms.py 的格式如下，可以有多form:
         "搶票時間"  : "00:10:01",       # 00:00:00 - 23:59:59
     },
 ]
+
+
+打包成執行檔
+pip install pyinstaller
+
+pyinstaller --onefile --noconsole autofill.py
+
+pyinstaller --onefile --noconsole --copy-metadata readchar --add-data "token.txt;." autofill.py
+
+pyinstaller autofill.spec

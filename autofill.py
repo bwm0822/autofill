@@ -10,12 +10,39 @@ import requests
 from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
+import msvcrt  # Windows 專用
+import json
+import threading
+import sys, os
 
 
 ''' 程式說明
 功能    : 網頁自動填表格
 參考文件 : https://steam.oxxostudio.tw/category/python/spider/selenium.html
 '''
+
+tbl_doc = {'':'',
+            '張絜閔-淡水':{'醫師代號':'1114','院區':'淡水'}, 
+            '周宜德-淡水':{'醫師代號':'1072','院區':'淡水'}, 
+            '丁瑋信-北兒':{'醫師代號':'55', '院區':'北兒'}, 
+           }
+
+tbl_area = {'台北':'tp', '北兒':'tp', '淡水':'ts', '新竹':'hc', '竹兒':'hc'}
+gui_log = None
+gui_key = None
+
+if hasattr(sys, '_MEIPASS'): base_path = sys._MEIPASS
+else: base_path = os.path.abspath(".")
+
+def msg(*args, **kwargs):
+    # print(args, kwargs)
+    if gui_log: gui_log(*args, **kwargs)
+    else: print(*args, **kwargs)
+
+def key_pressed():
+    if gui_key: return gui_key()
+    elif msvcrt.kbhit(): return msvcrt.getwch()
+    return None
 
 def wait_schedule(target_time_str):
     # 設定目標時間（24小時制）
@@ -29,12 +56,22 @@ def wait_schedule(target_time_str):
     print(f"人家會等到 {target_time.strftime('%Y-%m-%d %H:%M:%S')} 再幫妳點唷♥")
 
     # Sexy 倒數～每秒秀出現在時間
+    if gui_log: msg('提交時間:',target_time.strftime('%Y-%m-%d %H:%M:%S'))
     while datetime.datetime.now() < target_time:
         now = datetime.datetime.now()
-        print("現在時間是：", now.strftime("%Y-%m-%d %H:%M:%S"), '(目標時間：', target_time.strftime('%Y-%m-%d %H:%M:%S'),')', end="\r", flush=True)
+        if gui_log: 
+            msg('目前時間:',now.strftime('%Y-%m-%d %H:%M:%S'), end="\r", flush=True)
+        else: 
+            msg("按'q'離開，", '提交時間:', target_time.strftime('%Y-%m-%d %H:%M:%S'), '目前時間:', now.strftime("%Y-%m-%d %H:%M:%S"), end="\r", flush=True)
+
+        key = key_pressed()
+        if key == 'q':
+            msg('\n[取消]')
+            return False
         time.sleep(1)
 
     print("\n時間到囉～人家開始動作囉😍")
+    return True
 
 def push_line_message(token, message, user_id):
     url = 'https://api.line.me/v2/bot/message/push'
@@ -75,53 +112,6 @@ def multicast_line_message(token, message, user_ids):
     r = requests.post(url, headers=headers, json=data)
     print(r.status_code, r.text)
 
-def registered(form, token):
-    options = Options()
-    options.add_argument('--headless')  # 啟用無頭模式
-    # options.add_argument('--disable-gpu')  # 可選，避免某些平台錯誤，(打開此選項時，跑多個執行緒會有問題，只有其中一個執行緒能正常跑)
-    options.add_argument('--no-sandbox')  # 避免沙盒問題（尤其在 Linux）
-    options.add_argument('--disable-dev-shm-usage')  # 修復共享記憶體問題（Docker 常用）
-
-    driver = webdriver.Chrome(options=options) # 初始化 Chrome 瀏覽器
-    wait = WebDriverWait(driver, 1)
-    driver.get( form['網址'] )           # 開啟網址
-
-    if '搶票時間' in form: wait_schedule(form['搶票時間'])
-
-    # 重試 retry 次
-    for i in range(1, form['重試次數']+1):
-        try:
-            print(f"\n💋 第 {i} 次嘗試中...")
-            driver.refresh()
-            # time.sleep(1)
-
-            # 定位複診(可掛)的按鈕，日期為 2025/05/28，下午（index = 2）
-            # xpath = f"//td[contains(text(), '{date}')]/following-sibling::td[1]//a[contains(text(),'初診(可掛)')]"
-            # 找到包含日期的 td，往 parent tr 走，然後在該列內尋找含有「複診(可掛)」的 a
-            xpath = f"//td[contains(text(), '{form['日期']}')]/parent::tr//a[contains(text(), '{form['診別']}(可掛)')]"
-            target_button = wait.until(EC.element_to_be_clickable((By.XPATH, xpath)))
-            print("找到了♥ 開始點點囉～")
-            target_button.click()
-            
-            # time.sleep(1)
-
-            txtID = driver.find_element(By.ID, 'txtID')             #取得 [身分證號] input元件，(根據網頁修改)
-            txtBirth = driver.find_element(By.ID, 'txtBirth')       #取得 [生日] input元件，(根據網頁修改)
-            button = driver.find_element(By.ID, 'search_button')    #取得 [送出] button元件，(根據網頁修改)
-            txtID.send_keys( form['身分證號'] )                     #填入 [身分證號]
-            txtBirth.send_keys( form['生日'] )                      #填入 [生日]
-            button.click()                                          #點擊 [按鈕]
-
-            time.sleep(1)
-            message = get_message(driver.page_source)
-            print(message)
-            # push_line_message(token, message, user_id)
-            broadcast_line_message(token, message)
-            break
-        except Exception as e:
-            print("人家找不到按鈕…嗚嗚～", e)
-            # time.sleep(10)
-
 def get_message(page):
     soup = BeautifulSoup(page, 'html.parser')
     # 提取所有 li 的文字
@@ -147,24 +137,100 @@ def file_to_json(filenmae):
     print(data_str)
     return eval(data_str)
 
+# def file_to_str(filename):
+#     with open(filename, "r", encoding="utf-8") as f:
+#         content = f.read()
+#     return content
+
 def file_to_str(filename):
-    with open(filename, "r", encoding="utf-8") as f:
-        content = f.read()
-    return content
+    if os.path.exists(filename):
+        with open(os.path.join(base_path, filename), "r") as f:
+            content = f.read()
+        return content
+    else:
+        return None
 
-def add_url(forms):
-    tbl_doc = {'張絜閔':'1114', '周宜德':'1072'}
-    tbl_area = {'淡水':'ts', '台北':'tp'}
+def add_urls(forms):
     for form in forms:
-        did = tbl_doc[form['醫師']]
-        area = tbl_area[form['院區']]
-        form['網址']=f"https://www.mmh.org.tw/register_single_doctor.php?did={did}&area={area}"
-        print(form,'\n')
+        form['醫師代號']=tbl_doc[f"{form['醫師']}-{form['院區']}"]
+        add_url(form)
 
-def main():
+def add_url(form):
+    did = form['醫師代號']
+    area = tbl_area[form['院區']]
+    match form['院區']:
+        case '台北' | '淡水':
+            form['網址']=f"https://www.mmh.org.tw/register_single_doctor.php?did={did}&area={area}"
+        case '北兒':
+            form['網址']=f"https://www.mmh.org.tw/child/register_single_doctor.php?did={did}&area={area}"
+        case '新竹':
+            form['網址']=f"https://www.hc.mmh.org.tw/register_single_doctor.php?did={did}"
+        case '竹兒':
+            form['網址']=f"https://www.hc.mmh.org.tw/child/register_single_doctor.php?did={did}"
+
+def registered(form, token, headless=True, retry=3, test=False):
+    msg('\n[開始]')
+    options = Options()
+    if headless:
+        options.add_argument('--headless')  # 啟用無頭模式
+        # options.add_argument('--disable-gpu')  # 可選，避免某些平台錯誤，(打開此選項時，跑多個執行緒會有問題，只有其中一個執行緒能正常跑)
+        options.add_argument('--no-sandbox')  # 避免沙盒問題（尤其在 Linux）
+        options.add_argument('--disable-dev-shm-usage')  # 修復共享記憶體問題（Docker 常用）
+
+    if not test: driver = webdriver.Chrome(options=options) # 初始化 Chrome 瀏覽器
+    else: driver = webdriver.Chrome() # 初始化 Chrome 瀏覽器
+
+    wait = WebDriverWait(driver, 1)
+    driver.get( form['網址'] )           # 開啟網址
+
+    if not test and form['提交時間'] != '': 
+        if wait_schedule(form['提交時間']) == False: return
+
+    # 重試 retry 次
+    for i in range(1, retry+1):
+        try:
+            driver.refresh()
+            msg(f"\n第 {i} 次嘗試中...")
+            # time.sleep(1)
+
+            # 定位複診(可掛)的按鈕，日期為 2025/05/28，下午（index = 2）
+            # xpath = f"//td[contains(text(), '{date}')]/following-sibling::td[1]//a[contains(text(),'初診(可掛)')]"
+            # 找到包含日期的 td，往 parent tr 走，然後在該列內尋找含有「複診(可掛)」的 a
+            xpath = f"//td[contains(text(), '{form['日期']}')]/parent::tr//a[contains(text(), '{form['診別']}(可掛)')]"
+            target_button = wait.until(EC.element_to_be_clickable((By.XPATH, xpath)))
+            print("找到了♥ 開始點點囉～")
+
+            target_button.click()
+            
+            # time.sleep(1)
+
+            txtID = driver.find_element(By.ID, 'txtID')             #取得 [身分證號] input元件，(根據網頁修改)
+            txtBirth = driver.find_element(By.ID, 'txtBirth')       #取得 [生日] input元件，(根據網頁修改)
+            button = driver.find_element(By.ID, 'search_button')    #取得 [送出] button元件，(根據網頁修改)
+            txtID.send_keys( form['身分證號'] )                     #填入 [身分證號]
+            txtBirth.send_keys( form['生日'] )                      #填入 [生日]
+            if not test: 
+                button.click()                                      #點擊 [按鈕]
+                time.sleep(1)
+                message = get_message(driver.page_source)
+                msg(message)
+                if token and form['LINE通知']=='是': broadcast_line_message(token, message)
+            break
+        except Exception as e:
+            print("人家找不到按鈕…嗚嗚～", e)
+            msg('[失敗]')
+            # time.sleep(10)
+
+    msg('\n[結束]')
+
+
+
+
+def unit_test():
     forms = file_to_json('forms.py')
-    add_url(forms)
-    token = file_to_str('token.txt')
+    token = file_to_str('line.token')
+
+    add_urls(forms)
 
     # 開始多執行緒✨
     registered_with_token = partial(registered, token=token)
@@ -172,13 +238,13 @@ def main():
         executor.map(registered_with_token, forms)
 
     while True:
-        print("按[任意鍵]預約，按[q鍵]離開...")
+        print("按'q'離開...")
         k = readchar.readchar() #等待按鍵
         if(k == 'q'):
             print("[離開]") 
             break 
 
 
-main()
 
-
+if __name__ == "__main__":
+    unit_test()

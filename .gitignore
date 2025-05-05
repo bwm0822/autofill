@@ -163,6 +163,7 @@ cython_debug/
 firebase-key.json
 node_modules/
 tmp/
-token.txt
-userIds.txt
 forms.py
+line.token
+used.json
+doctor.json
