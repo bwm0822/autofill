@@ -32,8 +32,8 @@ tbl_segemnt = {'不限':0, '上午':1, '下午':2, '晚間':3}
 gui_log = None
 gui_key = None
 
-if hasattr(sys, '_MEIPASS'): base_path = sys._MEIPASS
-else: base_path = os.path.abspath(".")
+# if hasattr(sys, '_MEIPASS'): base_path = sys._MEIPASS
+# else: base_path = os.path.abspath(".")
 
 def msg(*args, **kwargs):
     # print(args, kwargs)
@@ -138,18 +138,21 @@ def file_to_json(filenmae):
     print(data_str)
     return eval(data_str)
 
-# def file_to_str(filename):
-#     with open(filename, "r", encoding="utf-8") as f:
-#         content = f.read()
-#     return content
-
 def file_to_str(filename):
     if os.path.exists(filename):
-        with open(os.path.join(base_path, filename), "r") as f:
+        with open(filename, "r", encoding="utf-8") as f:
             content = f.read()
         return content
     else:
         return None
+
+# def file_to_str(filename):
+#     if os.path.exists(filename):
+#         with open(os.path.join(base_path, filename), "r") as f:
+#             content = f.read()
+#         return content
+#     else:
+#         return None
 
 def add_urls(forms):
     for form in forms:

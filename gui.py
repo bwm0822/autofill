@@ -100,7 +100,7 @@ def gui():
             if name_entry.get():
                 tbl_user[name_entry.get()] ={'身分證號':id_entry.get(),'生日':birth_entry.get()}
                 comb_user.config(value=list(tbl_user.keys()))
-                save_json(tbl_user, 'used.json')
+                save_json(tbl_user, file_user)
                 log('[新增]')
                 log(f'姓　　名 : {name_entry.get()}')
                 log(f'身分證號 : {id_entry.get()}')
@@ -145,7 +145,7 @@ def gui():
                 tbl_doctor[id] = {'醫師代號':did_entry.get(),'院區':comb_area.get()}
                 tbl_doctor = dict_sort(tbl_doctor)
                 comb_doctor.config(value=list(tbl_doctor.keys()))
-                save_json(tbl_doctor, 'doctor.json')
+                save_json(tbl_doctor, file_doctor)
                 log('[新增]')
                 log(f'醫師姓名 : {name_entry.get()}')
                 log(f'醫師代號 : {did_entry.get()}')
@@ -308,7 +308,7 @@ def gui():
         if sel == '': return
         if tbl_user.pop(sel, None): 
              comb_user.config(value=list(tbl_user.keys()))
-             save_json(tbl_user, 'used.json')
+             save_json(tbl_user, file_user)
         log(f'[刪除] {user_var.get()}')
 
     def del_doctor():
@@ -316,12 +316,12 @@ def gui():
         if sel == '': return
         if tbl_doctor.pop(sel, None): 
              comb_doctor.config(value=list(tbl_doctor.keys()))
-             save_json(tbl_doctor, 'doctor.json')
+             save_json(tbl_doctor, file_doctor)
         log(f'[刪除] {doctor_var.get()}') 
 
     root = tk.Tk()
     root.withdraw()  # 💄 先隱藏視窗
-    root.title("馬偕醫院掛號小幫手(v1.0)")
+    root.title("馬偕醫院掛號小幫手(v1.1)")
     
     # 建立主要內容框，加上邊緣空間 padding
     frame = tk.Frame(root, padx=20, pady=20)  # ⬅ 四周邊距
