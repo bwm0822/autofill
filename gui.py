@@ -148,8 +148,10 @@ def gui():
     與程式置於同路徑，程式開啟時會自動讀取""", anchor="w", justify="left").pack(anchor="w")
         tk.Label(content, text="""3. 新增的[常用]、[醫師代號]等資訊會存於同路徑的
     used.json、doctor.json""", anchor="w", justify="left").pack(anchor="w")
-        tk.Label(content, text="""4. 按[測試]可以用來驗證你的輸入是否正確，
+        tk.Label(content, text="""4. 如果[日期]空白，會尋找第一個可掛號的日期""", anchor="w", justify="left").pack(anchor="w")
+        tk.Label(content, text="""5. 按[測試]可以用來驗證你的輸入是否正確，
     如果是正確無誤，就可以連上醫師掛號的頁面""", anchor="w", justify="left").pack(anchor="w")
+        tk.Label(content, text="""6. [測試]會顯示網頁，[送出]不會顯示網頁""", anchor="w", justify="left").pack(anchor="w")
 
         # 空行
         tk.Label(content, text="").pack()
@@ -211,13 +213,14 @@ def gui():
             "生日": birth_var.get() if birth_var.get() != ph_birth else '',
             "診別": visit_var.get(),
             "日期": date_var.get() if date_var.get() != ph_date else '',
+            "時段": segment_var.get(),
             "提交時間": time_var.get() if time_var.get() != ph_time else '',
             "LINE通知": notify_var.get()
         }
 
         lut = {"院區":"院　　區","醫師代號":"醫師代號","身分證號":"身分證號","生日":"生　　日",
-               "診別":"診　　別","日期":"日　　期","提交時間":"提交時間","LINE通知":"LINE通知",
-               "Token":"   Token"}
+               "診別":"診　　別","日期":"日　　期","時段":"時　　段","提交時間":"提交時間",
+               "LINE通知":"LINE通知","Token":"   Token"}
 
         # form['Token'] = '無' if token is None else '有'
 
@@ -241,7 +244,7 @@ def gui():
         end = kwargs['end'] if 'end' in kwargs else None
         msg = " ".join(str(arg) for arg in args)
 
-        if any(word in msg for word in ('[取消]', '[結束]')): 
+        if any(word in msg for word in ('[取消]', '[結束]','[測試結束]')): 
             btn_submit.config(state="normal")
             btn_test.config(state="normal")
             btn_clear.config(state="normal")
@@ -304,6 +307,7 @@ def gui():
     birth_var = tk.StringVar()
     visit_var = tk.StringVar(value="複診")
     date_var = tk.StringVar()
+    segment_var = tk.StringVar(value="不限")
     time_var = tk.StringVar(value='00:00:01')
     notify_var = tk.StringVar(value="否")
 
@@ -343,6 +347,7 @@ def gui():
         ("生　　日", birth_entry, ""),
         ("診　　別", ttk.Combobox(frame, textvariable=visit_var, values=["初診", "複診"], state="readonly"), ""),
         ("日　　期", date_entry, ""),
+        ("時　　段", ttk.Combobox(frame, textvariable=segment_var, values=list(au.tbl_segemnt.keys()), state="readonly"), ""),
         ("提交時間", time_entry, "[空白]代表立刻提交"),
         ("LINE通知", ttk.Combobox(frame, textvariable=notify_var, values=["是", "否"], state="readonly"), ""),
     ]
@@ -367,12 +372,12 @@ def gui():
     btn_frame.grid(row=len(fields), column=1, pady=0, padx=0, sticky="ew")
     btn_test = tk.Button(btn_frame, text="測試", command=lambda: submit_form(test=True))
     btn_test.pack(side='left',padx=10)
-    btn_clear = tk.Button(btn_frame, text="清除", command=lambda: clear())
+    btn_clear = tk.Button(btn_frame, text="清除 log", command=lambda: clear())
     btn_clear.pack(side='left',padx=10)
     btn_help = tk.Button(btn_frame, text="說明", command=lambda: show_help())
     btn_help.pack(side='left',padx=10)
 
-    btn_submit = tk.Button(frame, text="提交", command=lambda: submit_form())
+    btn_submit = tk.Button(frame, text="送出", command=lambda: submit_form())
     btn_submit.grid(row=len(fields), column=2, pady=0, padx=0, sticky="")
 
     # log 區域

@@ -28,6 +28,7 @@ tbl_doc = {'':'',
            }
 
 tbl_area = {'台北':'tp', '北兒':'tp', '淡水':'ts', '新竹':'hc', '竹兒':'hc'}
+tbl_segemnt = {'不限':0, '上午':1, '下午':2, '晚間':3}
 gui_log = None
 gui_key = None
 
@@ -169,7 +170,7 @@ def add_url(form):
             form['網址']=f"https://www.hc.mmh.org.tw/child/register_single_doctor.php?did={did}"
 
 def registered(form, token, headless=True, retry=3, test=False):
-    msg('\n[開始]')
+    msg('\n[開始]' if not test else '\n[測試開始]')
     options = Options()
     if headless:
         options.add_argument('--headless')  # 啟用無頭模式
@@ -193,13 +194,18 @@ def registered(form, token, headless=True, retry=3, test=False):
             msg(f"\n第 {i} 次嘗試中...")
             # time.sleep(1)
 
-            # 定位複診(可掛)的按鈕，日期為 2025/05/28，下午（index = 2）
-            # xpath = f"//td[contains(text(), '{date}')]/following-sibling::td[1]//a[contains(text(),'初診(可掛)')]"
-            # 找到包含日期的 td，往 parent tr 走，然後在該列內尋找含有「複診(可掛)」的 a
-            xpath = f"//td[contains(text(), '{form['日期']}')]/parent::tr//a[contains(text(), '{form['診別']}(可掛)')]"
-            target_button = wait.until(EC.element_to_be_clickable((By.XPATH, xpath)))
-            print("找到了♥ 開始點點囉～")
+            segment = tbl_segemnt[form['時段']]
 
+            if segment == 0:
+                # 找到包含日期的 td，往 parent tr 走，然後在該列內尋找含有「複診(可掛)」的 a
+                xpath = f"//td[contains(text(), '{form['日期']}')]/parent::tr//a[contains(text(), '{form['診別']}(可掛)')]"
+            else:
+                # xpath = f"//td[contains(text(), '{form['日期']}')]/following-sibling::td[{segment}]//a[contains(text(),'{form['診別']}(可掛)')]"
+                xpath = f"//tr[td[contains(text(), '{form['日期']}')]]/td[position()={segment + 1}]/a[contains(text(), '{form['診別']}(可掛)')]"
+
+            target_button = wait.until(EC.element_to_be_clickable((By.XPATH, xpath)))
+
+            print("找到了♥ 開始點點囉～")
             target_button.click()
             
             # time.sleep(1)
@@ -215,13 +221,16 @@ def registered(form, token, headless=True, retry=3, test=False):
                 message = get_message(driver.page_source)
                 msg(message)
                 if token and form['LINE通知']=='是': broadcast_line_message(token, message)
+            else:
+                message = get_message(driver.page_source)
+                msg(message)
             break
         except Exception as e:
             print("人家找不到按鈕…嗚嗚～", e)
             msg('[失敗]')
             # time.sleep(10)
 
-    msg('\n[結束]')
+    msg('\n[結束]' if not test else '\n[測試結束]')
 
 
 
