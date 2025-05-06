@@ -178,9 +178,19 @@ def gui():
     其中 did=1114 的 1114 就是[醫師代號]""", anchor="w", justify="left").pack(anchor="w")
         tk.Label(content, text="""2. 如何啟用[LINE通知]的功能
     取得 LINE 的 Token，將 Token 存於 line.token，
-    與程式置於同路徑，程式開啟時會自動讀取""", anchor="w", justify="left").pack(anchor="w")
-        tk.Label(content, text="""3. 新增的[常用]、[醫師代號]等資訊會存於同路徑的
-    used.json、doctor.json""", anchor="w", justify="left").pack(anchor="w")
+    與執行檔置於同路徑，執行檔執行時會自動讀取""", anchor="w", justify="left").pack(anchor="w")
+        
+        # 超連結樣式
+        default_font  = tkfont.nametofont("TkDefaultFont")
+        df= default_font.actual()
+        # print("預設字型設定：", df)
+        link_font = tkfont.Font(underline=False,size=df['size'],family=df['family'])
+        link_label = tk.Label(content, text="""     （如何取得 LINE 的 Token）""", fg="blue", cursor="hand2", font=link_font)
+        link_label.pack(anchor="w")
+        link_label.bind("<Button-1>", lambda e: webbrowser.open("https://bwm0822.github.io/doc/auto_registered.html#line"))
+
+        tk.Label(content, text="""3. 新增的[用戶]、[醫師代號]等資訊會存於執行檔
+    同路徑的 user.json、doctor.json""", anchor="w", justify="left").pack(anchor="w")
         tk.Label(content, text="""4. 如果[日期]空白，會尋找第一個可掛號的日期""", anchor="w", justify="left").pack(anchor="w")
         tk.Label(content, text="""5. 按[測試]可以用來驗證你的輸入是否正確，
     如果是正確無誤，就可以連上醫師掛號的頁面""", anchor="w", justify="left").pack(anchor="w")
@@ -189,19 +199,7 @@ def gui():
         # 空行
         tk.Label(content, text="").pack()
 
-        # 超連結樣式
-        default_font  = tkfont.nametofont("TkDefaultFont")
-        df= default_font.actual()
-        # print("預設字型設定：", df)
-        link_font = tkfont.Font(underline=True,size=df['size'],family=df['family'])
-        link_label = tk.Label(content, text="如何取得 LINE 的 Token", fg="blue", cursor="hand2", font=link_font)
-        link_label.pack(anchor="w")
-        link_label.bind("<Button-1>", lambda e: webbrowser.open("https://example.com"))
-
-        # 第二個連結（多給你一點嘛～♥）
-        link2 = tk.Label(content, text="📨 官方網站：https://autofill.sexy", fg="blue", cursor="hand2", font=link_font)
-        link2.pack(anchor="w")
-        link2.bind("<Button-1>", lambda e: webbrowser.open("https://autofill.sexy"))
+        
 
         center_win(help_win, root)
 
