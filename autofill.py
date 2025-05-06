@@ -22,12 +22,12 @@ import sys, os
 '''
 
 tbl_doc = {'':'',
-            '張絜閔-淡水':{'醫師代號':'1114','院區':'淡水'}, 
+            '丁瑋信-台北兒童':{'醫師代號':'55', '院區':'台北兒童'},
             '周宜德-淡水':{'醫師代號':'1072','院區':'淡水'}, 
-            '丁瑋信-北兒':{'醫師代號':'55', '院區':'北兒'}, 
+            '張絜閔-淡水':{'醫師代號':'1114','院區':'淡水'},  
            }
 
-tbl_area = {'台北':'tp', '北兒':'tp', '淡水':'ts', '新竹':'hc', '竹兒':'hc'}
+tbl_area = {'台北':'tp', '台北兒童':'tp', '淡水':'ts', '新竹':'hc', '新竹兒童':'hc'}
 tbl_segemnt = {'不限':0, '上午':1, '下午':2, '晚間':3}
 gui_log = None
 gui_key = None
@@ -162,11 +162,11 @@ def add_url(form):
     match form['院區']:
         case '台北' | '淡水':
             form['網址']=f"https://www.mmh.org.tw/register_single_doctor.php?did={did}&area={area}"
-        case '北兒':
+        case '台北兒童':
             form['網址']=f"https://www.mmh.org.tw/child/register_single_doctor.php?did={did}&area={area}"
         case '新竹':
             form['網址']=f"https://www.hc.mmh.org.tw/register_single_doctor.php?did={did}"
-        case '竹兒':
+        case '新竹兒童':
             form['網址']=f"https://www.hc.mmh.org.tw/child/register_single_doctor.php?did={did}"
 
 def registered(form, token, headless=True, retry=3, test=False):

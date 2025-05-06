@@ -32,18 +32,47 @@ def center_win(win, root):
     pos_y = root_y + (root_h - win_h) // 2
     win.geometry(f"+{pos_x}+{pos_y}")
 
+def center(root):
+    # 更新視窗狀態，讓 Tkinter 計算完大小
+    root.update_idletasks()
+
+    # 取得實際寬高
+    win_width = root.winfo_width()
+    win_height = root.winfo_height()
+
+    # 螢幕尺寸
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+
+    # 計算置中位置
+    x = int((screen_width - win_width) / 2)
+    y = int((screen_height - win_height) / 2)
+
+    # 設定位置但不改變大小
+    root.geometry(f"+{x}+{y}")
+
+    root.deiconify()  # 💋 再優雅地秀出視窗
+
+def dict_sort(data):
+    data_sorted = {'': ''}  # 保留空 key 在最前面
+    data_sorted.update(dict(sorted(
+        ((k, v) for k, v in data.items() if k),
+        key=lambda item: item[0]
+    )))
+    return data_sorted
+
 def gui():
     ph_birth = 'YYMMDD'
     ph_date = 'YYYY/MM/DD'
     ph_time = 'hh:mm:ss'
     key = ''
-    tbl_used = {'':''}
+    tbl_user = {'':''}
     tbl_doctor = au.tbl_doc
     file_doctor = 'doctor.json'
-    file_used = 'used.json'
+    file_user = 'user.json'
     file_token = 'line.token'
 
-    def open_win_used():
+    def open_win_user():
         win = tk.Toplevel(root)
         win.title("輸入資料")
         win.resizable(False, False)  # 不可調整大小
@@ -54,6 +83,7 @@ def gui():
         tk.Label(win, text="姓　　名", anchor="e").grid(row=0, column=0, padx=10, pady=5, sticky="e")
         name_entry = tk.Entry(win)
         name_entry.grid(row=0, column=1, padx=10, pady=5)
+        name_entry.insert(0, user_var.get())
 
         tk.Label(win, text="身分證號", anchor="e").grid(row=1, column=0, padx=10, pady=5, sticky="e")
         id_entry = tk.Entry(win)
@@ -68,9 +98,9 @@ def gui():
         # ======= 建立按鈕區 =======
         def confirm():
             if name_entry.get():
-                tbl_used[name_entry.get()] ={'身分證號':id_entry.get(),'生日':birth_entry.get()}
-                comb_used.config(value=list(tbl_used.keys()))
-                save_json(tbl_used, 'used.json')
+                tbl_user[name_entry.get()] ={'身分證號':id_entry.get(),'生日':birth_entry.get()}
+                comb_user.config(value=list(tbl_user.keys()))
+                save_json(tbl_user, 'used.json')
                 log('[新增]')
                 log(f'姓　　名 : {name_entry.get()}')
                 log(f'身分證號 : {id_entry.get()}')
@@ -94,23 +124,26 @@ def gui():
         # ======= 建立標籤與輸入框 =======
         tk.Label(win, text="醫師姓名", anchor="e").grid(row=0, column=0, padx=10, pady=5, sticky="e")
         name_entry = tk.Entry(win)
-        name_entry.grid(row=0, column=1, padx=10, pady=5, sticky="w")
+        name_entry.grid(row=0, column=1, padx=10, pady=5, sticky="ew")
+        name_entry.insert(0, doctor_var.get().split('-')[0])
 
         tk.Label(win, text="醫師代號", anchor="e").grid(row=1, column=0, padx=10, pady=5, sticky="e")
         did_entry = tk.Entry(win)
-        did_entry.grid(row=1, column=1, padx=10, pady=5, sticky="w")
+        did_entry.grid(row=1, column=1, padx=10, pady=5, sticky="ew")
         did_entry.insert(0, did_var.get())
 
         tk.Label(win, text="院　　區", anchor="e").grid(row=2, column=0, padx=10, pady=5, sticky="e")
         comb_area = ttk.Combobox(win, values=list(au.tbl_area.keys()))
-        comb_area.grid(row=2, column=1, padx=10, pady=5, sticky="w")
+        comb_area.grid(row=2, column=1, padx=10, pady=5, sticky="ew")
         comb_area.set(area_var.get())
 
         # ======= 建立按鈕區 =======
         def confirm():
             if name_entry.get():
                 id = f"{name_entry.get()}-{comb_area.get()}"
+                nonlocal tbl_doctor
                 tbl_doctor[id] = {'醫師代號':did_entry.get(),'院區':comb_area.get()}
+                tbl_doctor = dict_sort(tbl_doctor)
                 comb_doctor.config(value=list(tbl_doctor.keys()))
                 save_json(tbl_doctor, 'doctor.json')
                 log('[新增]')
@@ -190,8 +223,8 @@ def gui():
         entry.bind("<FocusIn>", on_focus_in)
         entry.bind("<FocusOut>", on_focus_out)
 
-    def on_used_change(event):
-        val = tbl_used[comb_used.get()]
+    def on_user_change(event):
+        val = tbl_user[comb_user.get()]
         if '身分證號' in val: id_var.set(val['身分證號'])
         else: id_var.set(value='')
         if '生日' in val: birth_var.set(val['生日']); birth_entry.config(fg='black')
@@ -206,7 +239,7 @@ def gui():
     def submit_form(test=False):
         clear()
         form = {
-            "常用": used_var.get(),
+            # "用戶": user_var.get(),
             "院區": area_var.get(),
             "醫師代號": did_var.get(),
             "身分證號": id_var.get(),
@@ -272,13 +305,13 @@ def gui():
         nonlocal key  # 這樣會修改外層的 key 變數
         key = value
 
-    def del_used():
-        sel = used_var.get()
+    def del_user():
+        sel = user_var.get()
         if sel == '': return
-        if tbl_used.pop(sel, None): 
-             comb_used.config(value=list(tbl_used.keys()))
-             save_json(tbl_used, 'used.json')
-        log(f'[刪除] {used_var.get()}')
+        if tbl_user.pop(sel, None): 
+             comb_user.config(value=list(tbl_user.keys()))
+             save_json(tbl_user, 'used.json')
+        log(f'[刪除] {user_var.get()}')
 
     def del_doctor():
         sel = doctor_var.get()
@@ -288,18 +321,17 @@ def gui():
              save_json(tbl_doctor, 'doctor.json')
         log(f'[刪除] {doctor_var.get()}') 
 
-
-
     root = tk.Tk()
+    root.withdraw()  # 💄 先隱藏視窗
     root.title("馬偕醫院掛號小幫手(v1.0)")
-
+    
     # 建立主要內容框，加上邊緣空間 padding
     frame = tk.Frame(root, padx=20, pady=20)  # ⬅ 四周邊距
     frame.pack(fill="both", expand=True)
     # frame.grid(row=0, column=0, sticky="nsew")
 
     # 欄位變數
-    used_var = tk.StringVar()
+    user_var = tk.StringVar()
     area_var = tk.StringVar(value="淡水")
     doctor_var = tk.StringVar()
     did_var = tk.StringVar()
@@ -318,19 +350,19 @@ def gui():
     time_entry = tk.Entry(frame, textvariable=time_var)
     add_placeholder(time_entry, ph_time)
 
-    # [常用] 欄位
-    frame_used_add = tk.Frame(frame)
-    used_add = tk.Button(frame_used_add, text="新增", command=lambda: open_win_used())
-    used_add.pack(side="left",pady=0, padx=20)
-    used_del = tk.Button(frame_used_add, text="刪除", command=lambda: del_used())
-    used_del.pack(side="right",pady=0, padx=20)
-    comb_used = ttk.Combobox(frame, textvariable=used_var, values=list(tbl_used.keys()), state="readonly")
-    comb_used.bind("<<ComboboxSelected>>", on_used_change)
+    # [用戶] 欄位
+    frame_user_add = tk.Frame(frame)
+    user_add = tk.Button(frame_user_add, text="新增", command=lambda: open_win_user())
+    user_add.pack(side="left",pady=0, padx=20)
+    user_del = tk.Button(frame_user_add, text="刪除", command=lambda: del_user())
+    user_del.pack(side="right",pady=0, padx=20)
+    comb_user = ttk.Combobox(frame, textvariable=user_var, values=list(tbl_user.keys()), state="readonly")
+    comb_user.bind("<<ComboboxSelected>>", on_user_change)
 
     # [醫師] 欄位
     frame_doctor = tk.Frame(frame)
     tk.Entry(frame_doctor, textvariable=did_var, width=6).pack(side='left')
-    comb_doctor = ttk.Combobox(frame_doctor, textvariable=doctor_var, width=12, values=list(tbl_doctor.keys()), state="readonly")
+    comb_doctor = ttk.Combobox(frame_doctor, textvariable=doctor_var, width=14, values=list(tbl_doctor.keys()), state="readonly")
     comb_doctor.bind("<<ComboboxSelected>>", on_doctor_change)
     comb_doctor.pack(side='right')
     frame_doctor_add = tk.Frame(frame)
@@ -340,13 +372,13 @@ def gui():
     doctor_del.pack(side="right",pady=0, padx=20)
 
     fields = [
-        ("常　　用", comb_used, frame_used_add),
+        ("用　　戶", comb_user, frame_user_add),
         ("院　　區", ttk.Combobox(frame, textvariable=area_var, values=list(au.tbl_area.keys()), state="readonly"), ""),
         ("醫師代號", frame_doctor, frame_doctor_add),
         ("身分證號", tk.Entry(frame, textvariable=id_var), ""),
         ("生　　日", birth_entry, ""),
         ("診　　別", ttk.Combobox(frame, textvariable=visit_var, values=["初診", "複診"], state="readonly"), ""),
-        ("日　　期", date_entry, ""),
+        ("日　　期", date_entry, "[空白]代表不限日期"),
         ("時　　段", ttk.Combobox(frame, textvariable=segment_var, values=list(au.tbl_segemnt.keys()), state="readonly"), ""),
         ("提交時間", time_entry, "[空白]代表立刻提交"),
         ("LINE通知", ttk.Combobox(frame, textvariable=notify_var, values=["是", "否"], state="readonly"), ""),
@@ -392,20 +424,13 @@ def gui():
 
     log_text.config(yscrollcommand=scrollbar.set)
 
-    # ✨ 彈性自動調整 log 視窗大小
-    # root.grid_rowconfigure(1, weight=1)
-    # root.grid_columnconfigure(0, weight=1)    
+    center(root)
 
-    # 更新畫面並讓視窗自動調整
-    root.update()
-    # root.geometry("600x400")
-    root.geometry("")  # ✨ 自動調整視窗大小
-
-    data = load_json(file_used)
+    data = load_json(file_user)
     if data is not None: 
-        tbl_used = data; comb_used['value'] = list(tbl_used.keys())
-        log(f'載入 [{file_used}]')
-    else: log(f'沒找到 [{file_used}]')
+        tbl_user = data; comb_user['value'] = list(tbl_user.keys())
+        log(f'載入 [{file_user}]')
+    else: log(f'沒找到 [{file_user}]')
 
     data = load_json(file_doctor)
     if data is not None: 
@@ -416,7 +441,6 @@ def gui():
     token = au.file_to_str(file_token)
     if token is not None: log(f'載入 [{file_token}]')
     else: log(f'沒找到 [{file_token}]')
-
 
     root.mainloop()
 
