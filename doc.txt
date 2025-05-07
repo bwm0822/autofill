@@ -51,3 +51,15 @@ pyinstaller --onefile --noconsole autofill.py
 pyinstaller --onefile --noconsole --copy-metadata readchar --add-data "token.txt;." autofill.py
 
 pyinstaller autofill.spec
+
+
+
+
+建立 Python 虛擬環境
+python -m venv ./venv
+啟動 Python 虛擬環境
+.\venv\Scripts\activate
+安裝相關套件
+pip install -r requirements.txt
+將程式打包為一個執行檔，會放在 /dist/gui.exe
+pyinstaller --onefile --noconsole --copy-metadata readchar gui.py

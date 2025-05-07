@@ -3,8 +3,22 @@
 參考文件 : https://steam.oxxostudio.tw/category/python/spider/selenium.html  
 實作文件 : https://bwm0822.github.io/doc/auto_registered.html
 
-包裝成執行檔<br>
+將專案下載後，依照以下步驟，就可以產生一個可執行檔
+
+1. 進入專案目錄
+
+2. 建立 Python 虛擬環境<br>
+python -m venv ./venv<br>
+
+3. 啟動 Python 虛擬環境<br>
+.\venv\Scripts\activate<br>
+
+4. 安裝相關套件<br>
+pip install -r requirements.txt<br>
+
+5. 將程式打包為一個執行檔，會放在 /dist/gui.exe<br>
 pyinstaller --onefile --noconsole --copy-metadata readchar gui.py<br>
+
 
 ![Logo](pic.png)
 
