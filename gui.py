@@ -130,7 +130,7 @@ def gui():
         tk.Label(win, text="醫師代號", anchor="e").grid(row=1, column=0, padx=10, pady=5, sticky="e")
         did_entry = tk.Entry(win)
         did_entry.grid(row=1, column=1, padx=10, pady=5, sticky="ew")
-        did_entry.insert(0, did_var.get())
+        did_entry.insert(0, drcode_var.get())
 
         tk.Label(win, text="院　　區", anchor="e").grid(row=2, column=0, padx=10, pady=5, sticky="e")
         comb_area = ttk.Combobox(win, values=list(au.tbl_area.keys()))
@@ -172,10 +172,8 @@ def gui():
         content.pack(fill="both", expand=True)
 
         # 一般說明
-        tk.Label(content, text="""1. 如何取得[醫師代號]
-    進入 依醫師掛號 的頁面，觀察其網址(如下)，
-    ...doctor.php?depid=C7&did=1114&area=ts，
-    其中 did=1114 的 1114 就是[醫師代號]""", anchor="w", justify="left").pack(anchor="w")
+        tk.Label(content, text="""1. 到馬偕醫院網站首頁，選[科別掛號]，選取科別，
+    醫師姓名下的號碼就是[醫師代號]""", anchor="w", justify="left").pack(anchor="w")
         tk.Label(content, text="""2. 如何啟用[LINE通知]的功能
     取得 LINE 的 Token，將 Token 存於 line.token，
     與執行檔置於同路徑，執行檔執行時會自動讀取""", anchor="w", justify="left").pack(anchor="w")
@@ -230,8 +228,8 @@ def gui():
 
     def on_doctor_change(event):
         val = tbl_doctor[comb_doctor.get()]
-        if '醫師代號' in val: did_var.set(val['醫師代號'])
-        else: did_var.set(value='')
+        if '醫師代號' in val: drcode_var.set(val['醫師代號'])
+        else: drcode_var.set(value='')
         if '院區' in val: area_var.set(val['院區'])
 
     def submit_form(test=False):
@@ -239,7 +237,7 @@ def gui():
         form = {
             # "用戶": user_var.get(),
             "院區": area_var.get(),
-            "醫師代號": did_var.get(),
+            "醫師代號": drcode_var.get(),
             "身分證號": id_var.get(),
             "生日": birth_var.get() if birth_var.get() != ph_birth else '',
             "診別": visit_var.get(),
@@ -321,7 +319,7 @@ def gui():
 
     root = tk.Tk()
     root.withdraw()  # 💄 先隱藏視窗
-    root.title("馬偕醫院掛號小幫手(v1.1)")
+    root.title("馬偕醫院掛號小幫手(v1.2)")
     
     # 建立主要內容框，加上邊緣空間 padding
     frame = tk.Frame(root, padx=20, pady=20)  # ⬅ 四周邊距
@@ -332,7 +330,7 @@ def gui():
     user_var = tk.StringVar()
     area_var = tk.StringVar(value="淡水")
     doctor_var = tk.StringVar()
-    did_var = tk.StringVar()
+    drcode_var = tk.StringVar()
     id_var = tk.StringVar()
     birth_var = tk.StringVar()
     visit_var = tk.StringVar(value="複診")
@@ -359,7 +357,7 @@ def gui():
 
     # [醫師] 欄位
     frame_doctor = tk.Frame(frame)
-    tk.Entry(frame_doctor, textvariable=did_var, width=6).pack(side='left')
+    tk.Entry(frame_doctor, textvariable=drcode_var, width=6).pack(side='left')
     comb_doctor = ttk.Combobox(frame_doctor, textvariable=doctor_var, width=14, values=list(tbl_doctor.keys()), state="readonly")
     comb_doctor.bind("<<ComboboxSelected>>", on_doctor_change)
     comb_doctor.pack(side='right')
