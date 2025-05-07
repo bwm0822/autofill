@@ -38,11 +38,8 @@ pyinstaller --onefile --noconsole --copy-metadata readchar gui.py<br>
             按[測試]鍵會顯示網頁，可用來確認網頁是否正確，
             按[送出]鍵則不會顯示網頁，以加快執行速度及避免頁面被干擾
 
-如何取得[醫師代號]
-    進入 依醫師掛號 的頁面，觀察其網址(如下)，
-    https://www.mmh.org.tw/register_single_doctor.php?
-    depid=C7&did=1114&area=ts，
-    其中 did=1114 的 1114 就是[醫師代號]
+[醫師代號]  到馬偕醫院網站首頁，選[科別掛號]，選取科別，
+            醫師姓名下面的號碼就是[醫師代號]
 
 [新增]及[刪除]常用的設定
     [新增]功能：在[用戶]、[醫師代號]欄位的右邊按[新增]，會跳出視窗，

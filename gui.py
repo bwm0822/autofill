@@ -172,8 +172,9 @@ def gui():
         content.pack(fill="both", expand=True)
 
         # 一般說明
-        tk.Label(content, text="""1. 到馬偕醫院網站首頁，選[科別掛號]，選取科別，
-    醫師姓名下的號碼就是[醫師代號]""", anchor="w", justify="left").pack(anchor="w")
+        tk.Label(content, text="""1. 如何取得[醫師代號]
+    到馬偕醫院網站首頁，選[科別掛號]，選取科別，
+    醫師姓名下面的號碼就是[醫師代號]""", anchor="w", justify="left").pack(anchor="w")
         tk.Label(content, text="""2. 如何啟用[LINE通知]的功能
     取得 LINE 的 Token，將 Token 存於 line.token，
     與執行檔置於同路徑，執行檔執行時會自動讀取""", anchor="w", justify="left").pack(anchor="w")
