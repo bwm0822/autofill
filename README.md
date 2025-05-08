@@ -16,8 +16,8 @@ python -m venv ./venv<br>
 4. 安裝相關套件<br>
 pip install -r requirements.txt<br>
 
-5. 將程式打包為一個執行檔，執行檔會放在 \dist\gui.exe<br>
-pyinstaller --onefile --noconsole --copy-metadata readchar gui.py<br>
+5. 將程式打包為一個執行檔並壓縮成 zip，執行檔會放在 \dist\gui.exe<br>
+pyinstaller --onefile --noconsole --copy-metadata readchar gui.py; Compress-Archive -Force -Path .\dist\gui.exe -DestinationPath .\dist\gui.zip<br>
 
 
 ![Logo](pic.png)

@@ -63,3 +63,7 @@ python -m venv ./venv
 pip install -r requirements.txt
 將程式打包為一個執行檔，會放在 /dist/gui.exe
 pyinstaller --onefile --noconsole --copy-metadata readchar gui.py
+
+
+
+pyinstaller --onefile --noconsole --copy-metadata readchar gui.py; Compress-Archive -Force -Path .\dist\gui.exe -DestinationPath .\dist\gui.zip

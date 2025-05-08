@@ -164,6 +164,7 @@ firebase-key.json
 node_modules/
 tmp/
 forms.py
-line.token
+*.token
+*.exe
 user.json
 doctor.json
